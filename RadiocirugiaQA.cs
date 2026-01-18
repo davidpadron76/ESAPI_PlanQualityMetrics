@@ -40,12 +40,12 @@ namespace VMS.TPS
             StructureSet ss = plan.StructureSet;
 
             // --------------------------------------------------------------------------------
-            // 2. OBTENCI”N DE ESTRUCTURAS (PTV y BODY)
+            // 2. OBTENCI√ìN DE ESTRUCTURAS (PTV y BODY)
             // --------------------------------------------------------------------------------
             Structure ptv = GetTargetStructure(plan);
             if (ptv == null)
             {
-                MessageBox.Show("No se encontrÛ una estructura PTV (Target). \nRevisa el nombre o asigna el 'Target Volume' en las propiedades del plan.");
+                MessageBox.Show("No se encontr√≥ una estructura PTV (Target). \nRevisa el nombre o asigna el 'Target Volume' en las propiedades del plan.");
                 return;
             }
 
@@ -55,14 +55,14 @@ namespace VMS.TPS
 
             if (body == null)
             {
-                MessageBox.Show("No se encontrÛ la estructura BODY (External).");
+                MessageBox.Show("No se encontr√≥ la estructura BODY (External).");
                 return;
             }
 
             // --------------------------------------------------------------------------------
             // 3. DATOS DE REFERENCIA Y CONVERSIONES
             // --------------------------------------------------------------------------------
-            // Normalizamos todo a cGy para evitar confusiones si el plan est· en Gy
+            // Normalizamos todo a cGy para evitar confusiones si el plan est√° en Gy
             double doseRx_cGy = plan.TotalDose.Dose;
             if (plan.TotalDose.Unit == DoseValue.DoseUnit.Gy) doseRx_cGy *= 100.0;
 
@@ -70,31 +70,31 @@ namespace VMS.TPS
             DoseValue dv50 = new DoseValue(doseRx_cGy * 0.5, DoseValue.DoseUnit.cGy);
 
             // --------------------------------------------------------------------------------
-            // 4. C¡LCULOS DOSIM…TRICOS (Raw Data)
+            // 4. C√ÅLCULOS DOSIM√âTRICOS (Raw Data)
             // --------------------------------------------------------------------------------
 
-            // Vol˙menes
+            // Vol√∫menes
             double volPtv = ptv.Volume; // cc
             double volBody100 = plan.GetVolumeAtDose(body, dv100, VolumePresentation.AbsoluteCm3);
             double volBody50 = plan.GetVolumeAtDose(body, dv50, VolumePresentation.AbsoluteCm3);
             double volPtv100 = plan.GetVolumeAtDose(ptv, dv100, VolumePresentation.AbsoluteCm3);
 
             // Dosis en PTV (D2, D50, D98, Mean, Min)
-            // Nota: GetDoseAtVolume devuelve la unidad del plan. Forzamos la presentaciÛn.
+            // Nota: GetDoseAtVolume devuelve la unidad del plan. Forzamos la presentaci√≥n.
             double d2 = plan.GetDoseAtVolume(ptv, 2.0, VolumePresentation.Relative, DoseValuePresentation.Absolute).Dose;
             double d50 = plan.GetDoseAtVolume(ptv, 50.0, VolumePresentation.Relative, DoseValuePresentation.Absolute).Dose;
             double d98 = plan.GetDoseAtVolume(ptv, 98.0, VolumePresentation.Relative, DoseValuePresentation.Absolute).Dose;
-            double dMean = plan.GetDoseAtVolume(ptv, 50.0 /*Mean aprox*/, VolumePresentation.Relative, DoseValuePresentation.Absolute).Dose; // ESAPI no tiene .Mean directo f·cil en versiones viejas, usamos DVH Statistics si fuera necesario, pero D50 es buena aprox mediana. 
-                                                                                                                                             // Mejor usamos DVHData para Mean y Min reales si est·n disponibles, sino D99% como proxy de min y D50 como mediana.
+            double dMean = plan.GetDoseAtVolume(ptv, 50.0 /*Mean aprox*/, VolumePresentation.Relative, DoseValuePresentation.Absolute).Dose; // ESAPI no tiene .Mean directo f√°cil en versiones viejas, usamos DVH Statistics si fuera necesario, pero D50 es buena aprox mediana. 
+                                                                                                                                             // Mejor usamos DVHData para Mean y Min reales si est√°n disponibles, sino D99% como proxy de min y D50 como mediana.
                                                                                                                                              // Para simplificar y compatibilidad, usaremos los puntos standard ICRU:
 
-            // Dosis M·xima Global
+            // Dosis M√°xima Global
             double dmax = plan.Dose.DoseMax3D.Dose;
             if (plan.Dose.DoseMax3D.Unit == DoseValue.DoseUnit.Percent) dmax = (dmax / 100.0) * doseRx_cGy;
             else if (plan.Dose.DoseMax3D.Unit == DoseValue.DoseUnit.Gy) dmax *= 100.0;
 
-            // CorrecciÛn de unidades si las funciones devolvieron Gy (depende de versiÛn ESAPI)
-            // Una forma segura es chequear contra la Rx. Si D50 < 100 y Rx es 2000, est· en Gy.
+            // Correcci√≥n de unidades si las funciones devolvieron Gy (depende de versi√≥n ESAPI)
+            // Una forma segura es chequear contra la Rx. Si D50 < 100 y Rx es 2000, est√° en Gy.
             // Asumiremos que ESAPI devuelve en la unidad del plan. Si plan es Gy, convertimos.
             bool planIsGy = plan.TotalDose.Unit == DoseValue.DoseUnit.Gy;
             if (planIsGy)
@@ -103,7 +103,7 @@ namespace VMS.TPS
             }
 
             // --------------------------------------------------------------------------------
-            // 5. C¡LCULO DE ÕNDICES COMPLEJOS
+            // 5. C√ÅLCULO DE √çNDICES COMPLEJOS
             // --------------------------------------------------------------------------------
 
             // Conformidad
@@ -114,7 +114,7 @@ namespace VMS.TPS
             double gradientIdx = (volBody100 > 0) ? (volBody50 / volBody100) : 0;
             double homoIdx = (d50 > 0) ? (d2 - d98) / d50 : 0;
 
-            // Factor MUR (ModulaciÛn)
+            // Factor MUR (Modulaci√≥n)
             double totalMU = 0;
             foreach (var beam in plan.Beams.Where(b => !b.IsSetupField))
             {
@@ -127,31 +127,31 @@ namespace VMS.TPS
 
 
             // --------------------------------------------------------------------------------
-            // 6. PREPARAR LISTA DE RESULTADOS (AQUÕ AGREGAMOS LOS DATOS EXTRAS)
+            // 6. PREPARAR LISTA DE RESULTADOS
             // --------------------------------------------------------------------------------
             var resultados = new List<MetricaQA>();
 
-            // --- GRUPO 1: DATOS DEL PACIENTE Y VOL⁄MENES ---
-            resultados.Add(new MetricaQA { Nombre = "Dosis Prescrita (Rx)", Valor = $"{doseRx_cGy:F0} cGy", Referencia = "PlanificaciÛn" });
+            // --- GRUPO 1: DATOS DEL PACIENTE Y VOL√öMENES ---
+            resultados.Add(new MetricaQA { Nombre = "Dosis Prescrita (Rx)", Valor = $"{doseRx_cGy:F0} cGy", Referencia = "Planificaci√≥n" });
             resultados.Add(new MetricaQA { Nombre = "Volumen PTV", Valor = $"{volPtv:F2} cc", Referencia = "Estructura Target" });
 
-            // --- GRUPO 2: ESTADÕSTICAS DOSIM…TRICAS (LO QUE PEDISTE) ---
-            resultados.Add(new MetricaQA { Nombre = "Dosis M·xima (Global)", Valor = $"{dmax:F1} cGy", Referencia = $"{(dmax / doseRx_cGy * 100):F1}% de Rx" });
-            resultados.Add(new MetricaQA { Nombre = "Dosis PTV - D2%", Valor = $"{d2:F1} cGy", Referencia = "Cerca del M·x (ICRU)" });
+            // --- GRUPO 2: ESTAD√çSTICAS DOSIM√âTRICAS ---
+            resultados.Add(new MetricaQA { Nombre = "Dosis M√°xima (Global)", Valor = $"{dmax:F1} cGy", Referencia = $"{(dmax / doseRx_cGy * 100):F1}% de Rx" });
+            resultados.Add(new MetricaQA { Nombre = "Dosis PTV - D2%", Valor = $"{d2:F1} cGy", Referencia = "Cerca del M√°x (ICRU)" });
             resultados.Add(new MetricaQA { Nombre = "Dosis PTV - D50% (Mediana)", Valor = $"{d50:F1} cGy", Referencia = "Ref. Homogeneidad" });
-            resultados.Add(new MetricaQA { Nombre = "Dosis PTV - D98% (MÌnima)", Valor = $"{d98:F1} cGy", Referencia = "Cerca del MÌn (ICRU)" });
+            resultados.Add(new MetricaQA { Nombre = "Dosis PTV - D98% (M√≠nima)", Valor = $"{d98:F1} cGy", Referencia = "Cerca del M√≠n (ICRU)" });
 
-            // --- GRUPO 3: VOL⁄MENES DE ISODOSIS ---
+            // --- GRUPO 3: VOL√öMENES DE ISODOSIS ---
             resultados.Add(new MetricaQA { Nombre = "Volumen V100% (Cuerpo)", Valor = $"{volBody100:F2} cc", Referencia = "Volumen irradiado a Rx" });
             resultados.Add(new MetricaQA { Nombre = "Volumen V50% (Cuerpo)", Valor = $"{volBody50:F2} cc", Referencia = "Derrame de dosis baja" });
             resultados.Add(new MetricaQA { Nombre = "Cobertura PTV (V100%)", Valor = $"{(volPtv100 / volPtv * 100):F2} %", Referencia = "% del PTV cubierto" });
 
-            // --- GRUPO 4: ÕNDICES DE CALIDAD ---
-            resultados.Add(new MetricaQA { Nombre = "Õndice Conformidad Paddick", Valor = $"{ciPaddick:F3}", Referencia = "Ideal: 1.0" });
-            resultados.Add(new MetricaQA { Nombre = "Õndice Conformidad RTOG", Valor = $"{ciRTOG:F3}", Referencia = "Ideal: 1.0" });
-            resultados.Add(new MetricaQA { Nombre = "Õndice Gradiente (Paddick)", Valor = $"{gradientIdx:F2}", Referencia = "V50% / V100%" });
-            resultados.Add(new MetricaQA { Nombre = "Õndice Homogeneidad (ICRU)", Valor = $"{homoIdx:F3}", Referencia = "(D2-D98)/D50" });
-            resultados.Add(new MetricaQA { Nombre = "Factor ModulaciÛn (MUR)", Valor = $"{mur:F3}", Referencia = "MU / cGy" });
+            // --- GRUPO 4: √çNDICES DE CALIDAD ---
+            resultados.Add(new MetricaQA { Nombre = "√çndice Conformidad Paddick", Valor = $"{ciPaddick:F3}", Referencia = "Ideal: 1.0" });
+            resultados.Add(new MetricaQA { Nombre = "√çndice Conformidad RTOG", Valor = $"{ciRTOG:F3}", Referencia = "Ideal: 1.0" });
+            resultados.Add(new MetricaQA { Nombre = "√çndice Gradiente (Paddick)", Valor = $"{gradientIdx:F2}", Referencia = "V50% / V100%" });
+            resultados.Add(new MetricaQA { Nombre = "√çndice Homogeneidad (ICRU)", Valor = $"{homoIdx:F3}", Referencia = "(D2-D98)/D50" });
+            resultados.Add(new MetricaQA { Nombre = "Factor Modulaci√≥n (MUR)", Valor = $"{mur:F3}", Referencia = "MU / cGy" });
 
             // --------------------------------------------------------------------------------
             // 7. LANZAR INTERFAZ
@@ -161,11 +161,11 @@ namespace VMS.TPS
 
             window.Content = reportView;
             window.Title = $"QA Report - {context.Patient.Id}";
-            window.Width = 620; // Un poco m·s ancha para que quepan los datos
+            window.Width = 620; 
             window.Height = 650;
         }
 
-        // FunciÛn Helper para encontrar el PTV
+        // Funci√≥n Helper para encontrar el PTV
         private Structure GetTargetStructure(PlanSetup plan)
         {
             var ss = plan.StructureSet;
@@ -173,4 +173,5 @@ namespace VMS.TPS
             return ss.Structures.FirstOrDefault(s => s.Id == "PTV") ?? ss.Structures.FirstOrDefault(s => s.Id.ToUpper().Contains("PTV") && !s.IsEmpty);
         }
     }
+
 }
