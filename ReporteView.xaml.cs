@@ -1,17 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace VMS.TPS
 {
@@ -46,7 +37,7 @@ namespace VMS.TPS
         // Lógica del botón Copiar
         private void BtnCopiar_Click(object sender, RoutedEventArgs e)
         {
-            if (_metricas == null) return;
+            if (_metricas == null || _metricas.Count == 0) return;
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine($"REPORT QA - {txtPatientName.Text}");
@@ -56,8 +47,16 @@ namespace VMS.TPS
                 // Formato tabulado para pegar en Excel
                 sb.AppendLine($"{item.Nombre}\t{item.Valor}\t[{item.Referencia}]");
             }
-            Clipboard.SetText(sb.ToString());
-            MessageBox.Show("Reporte copiado al portapapeles.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            try
+            {
+                Clipboard.SetText(sb.ToString());
+                MessageBox.Show("Reporte copiado al portapapeles.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al copiar: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }
