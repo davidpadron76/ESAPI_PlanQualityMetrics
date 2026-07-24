@@ -91,7 +91,7 @@ namespace VMS.TPS
             // Homogeneity Index (ICRU 83): (D2%-D98%)/D50%; ideal cercano a 0.
             double homoIdx = (d50 > 0) ? (d2 - d98) / d50 : 0;
 
-            // Eficiencia de UM: UM totales entregadas por cGy de dosis por fracción.
+            // MUR (Monitor Unit Ratio): UM totales entregadas por cGy de dosis por fracción.
             // Nota: NO equivale al "Modulation Factor" clásico de complejidad de segmentos/MLC;
             // es un indicador indirecto de cuánta modulación exige el plan para entregar la dosis.
             double totalMU = 0;
@@ -102,7 +102,7 @@ namespace VMS.TPS
 
             double dosePerFx = plan.DosePerFraction.Dose;
             if (plan.DosePerFraction.Unit == DoseValue.DoseUnit.Gy) dosePerFx *= 100.0;
-            double muEfficiency = (dosePerFx > 0) ? totalMU / dosePerFx : 0;
+            double mur = (dosePerFx > 0) ? totalMU / dosePerFx : 0;
 
             // 6. PREPARAR LISTA DE RESULTADOS (agrupados por categoría para la interfaz)
             const string catPrescripcion = "Prescripción";
@@ -130,7 +130,7 @@ namespace VMS.TPS
                 new MetricaQA { Categoria = catIndices, Nombre = "Índice de Gradiente de Dosis (GI)", Valor = $"{gradientIdx:F2}", Referencia = "V50% / V100% — menor es más conformado" },
                 new MetricaQA { Categoria = catIndices, Nombre = "Índice de Homogeneidad (HI, ICRU 83)", Valor = $"{homoIdx:F3}", Referencia = "(D2%-D98%)/D50% — ideal cercano a 0" },
 
-                new MetricaQA { Categoria = catComplejidad, Nombre = "Eficiencia de UM", Valor = $"{muEfficiency:F1} UM/cGy", Referencia = "UM totales / dosis por fracción" }
+                new MetricaQA { Categoria = catComplejidad, Nombre = "MUR (Monitor Unit Ratio)", Valor = $"{mur:F1} UM/cGy", Referencia = "UM totales / dosis por fracción" }
             };
 
             // 7. LANZAR INTERFAZ
