@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace VMS.TPS
 {
     // Clase auxiliar para los datos de la tabla
     public class MetricaQA
     {
+        public string Categoria { get; set; }
         public string Nombre { get; set; }
         public string Valor { get; set; }
         public string Referencia { get; set; }
@@ -30,8 +33,12 @@ namespace VMS.TPS
             txtPlanInfo.Text = $"Plan ID: {planId}";
             _metricas = resultados;
 
-            // Llenamos la tabla visual con la lista de datos
-            gridResultados.ItemsSource = _metricas;
+            // Agrupamos por categoría para separar visualmente Prescripción / Volúmenes / Dosis / Índices / Complejidad
+            ICollectionView vista = CollectionViewSource.GetDefaultView(_metricas);
+            vista.GroupDescriptions.Clear();
+            vista.GroupDescriptions.Add(new PropertyGroupDescription("Categoria"));
+
+            gridResultados.ItemsSource = vista;
         }
 
         // Lógica del botón Copiar
@@ -41,13 +48,22 @@ namespace VMS.TPS
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine($"REPORT QA - {txtPatientName.Text}");
+            sb.AppendLine($"{txtPlanInfo.Text}");
             sb.AppendLine("------------------------------------------------");
+
+            string categoriaActual = null;
             foreach (var item in _metricas)
             {
+                if (item.Categoria != categoriaActual)
+                {
+                    categoriaActual = item.Categoria;
+                    sb.AppendLine();
+                    sb.AppendLine($"[{categoriaActual}]");
+                }
                 // Formato tabulado para pegar en Excel
-                sb.AppendLine($"{item.Nombre}\t{item.Valor}\t[{item.Referencia}]");
+                sb.AppendLine($"{item.Nombre}\t{item.Valor}\t{item.Referencia}");
             }
-            
+
             try
             {
                 Clipboard.SetText(sb.ToString());
