@@ -21,7 +21,7 @@ Evaluating conformity, gradient falloff, and homogeneity manually involves readi
 * **Clinical Efficiency:** Reduces plan evaluation time from several minutes of manual inspection to a few seconds of computational processing.
 
 ## 💻 System Requirements
-* **Eclipse TPS:** Built and tested against ESAPI v18.0 (Varian RTM 18.0). To target a different Eclipse/ESAPI version, update the `HintPath` references in `RadiocirugiaQA.csproj` to point to your clinic's `VMS.TPS.Common.Model.API.dll` / `VMS.TPS.Common.Model.Types.dll`.
+* **Eclipse TPS:** Built and tested against ESAPI v18.0 (Varian RTM 18.0). To target a different Eclipse/ESAPI version, update the `HintPath` references in `PlanQualityMetrics.csproj` to point to your clinic's `VMS.TPS.Common.Model.API.dll` / `VMS.TPS.Common.Model.Types.dll`.
 * **.NET Framework:** 4.8 (see `TargetFrameworkVersion` in the `.csproj`); adjust to match your clinic's ESAPI version if needed.
 * **Write-enabled plugin:** the script creates temporary "ring" and dummy structures per PTV to compute local metrics, and removes them before finishing (`try`/`finally`). It is marked `[assembly: ESAPIScript(IsWriteable = true)]` and calls `context.Patient.BeginModifications()`. When compiled in Eclipse's Script Runner, the resulting `.dll` **must be approved for write access** by an authorized user before it can run on a live structure set — check your clinic's script-governance policy.
 
@@ -30,7 +30,7 @@ Depending on the specific UI components used in this project, it is highly recom
 
 1. Clone or download this repository to your local machine.
 2. Open the solution file (`.sln`) using **Visual Studio**.
-3. In `RadiocirugiaQA.csproj`, confirm the `HintPath` of the `VMS.TPS.Common.Model.API` / `VMS.TPS.Common.Model.Types` references points to your clinic's installed ESAPI DLLs; adjust the path if your Eclipse/Varian RTM version or install location differs.
+3. In `PlanQualityMetrics.csproj`, confirm the `HintPath` of the `VMS.TPS.Common.Model.API` / `VMS.TPS.Common.Model.Types` references points to your clinic's installed ESAPI DLLs; adjust the path if your Eclipse/Varian RTM version or install location differs.
 4. Build the solution (`Ctrl + Shift + B` or `Build > Build Solution`).
 5. Locate the compiled `.dll` file inside the `bin\Debug` or `bin\Release` folder.
 6. In Eclipse, open the Script Runner, navigate to the folder containing your compiled `.dll`, and execute it.
